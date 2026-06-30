@@ -1,4 +1,4 @@
-# Notebooks — U-Net para segmentação (Kaggle / Colab)
+# Notebooks — U-Net para segmentação (Colab)
 
 Material prático da disciplina **BCC6003 – Inteligência Computacional**: fine-tuning de U-Net com `segmentation_models.pytorch` para segmentação binária no **Oxford-IIIT Pet Dataset**.
 
@@ -8,13 +8,15 @@ Material prático da disciplina **BCC6003 – Inteligência Computacional**: fin
 
 Especificação completa do exercício: [`exercicio.md`](../../exercicio.md).
 
+**Notebook no Colab:** [Abrir atividade](https://colab.research.google.com/drive/1EMkiCFCBLLtAPd-I3udVLJMr9RGB22g1)
+
 ---
 
 ## Pré-requisitos
 
-1. Conta no [Kaggle](https://www.kaggle.com/) ou [Google Colab](https://colab.research.google.com/)
-2. Notebook com **GPU** habilitada (T4 recomendada)
-3. **Internet ligada** — dataset via `torchvision`, biblioteca `segmentation-models-pytorch` e pesos ImageNet
+1. Conta no [Google Colab](https://colab.research.google.com/)
+2. **Ambiente de execução → T4 GPU**
+3. **Internet ativa** — dataset via `torchvision`, biblioteca `segmentation-models-pytorch` e pesos ImageNet
 
 Dependência adicional (instalada no notebook):
 
@@ -24,37 +26,30 @@ pip install segmentation-models-pytorch
 
 ---
 
-## Publicar o notebook
+## Entrega
 
-1. Acesse [kaggle.com/code](https://www.kaggle.com/code) → **New Notebook**
-2. **File → Upload Notebook** e envie `unet_segmentacao_pets.ipynb`
-3. Em **Settings** (painel direito):
-   - **Accelerator:** GPU T4 (ou GPU disponível)
-   - **Internet:** On
-4. Execute **Run All** e complete os trechos marcados com `# TODO`
-5. **Save Version → Save & Run All** para gerar uma versão executável
+A entrega é o **link do seu notebook no Google Colab**, enviado ao professor pela plataforma da disciplina.
 
----
-
-## Compartilhar
-
-- **Share → Copy link** — URL pública do notebook
-- Envie o link na plataforma da disciplina
+1. Complete os `# TODO` e responda **todas as perguntas** nas células markdown.
+2. Execute **Executar tudo** com GPU.
+3. Compartilhe o notebook (link de leitura).
+4. Envie o link do Colab — **sem** PDF ou documento separado.
 
 ---
 
 ## Estrutura do notebook
 
-1. Introdução e setup (Kaggle / Colab)
+1. Introdução, objetivos e entrega (link do Colab)
 2. Instalação de `segmentation_models.pytorch`
 3. Carregamento do dataset (Oxford-IIIT Pet)
-4. Pré-processamento (128×128, máscara binária)
+4. Pré-processamento (128×128, máscara binária) + perguntas com espaço de resposta
 5. DataLoader (600 / 100 / 100)
 6. Configuração da U-Net — `smp.Unet` com encoder ResNet18 + ImageNet
 7. `BCEWithLogitsLoss` e otimizador Adam
 8. Loop de treinamento (5 épocas) — **TODO**
-9. Gráfico de loss — **TODO**
+9. Gráfico de loss + IoU/Dice (funções prontas)
 10. Visualização imagem | máscara real | predição — **TODO**
+11. Discussão, questões conceituais e checklist de entrega
 
 ---
 

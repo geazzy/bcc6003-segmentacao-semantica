@@ -12,14 +12,20 @@ Apresentação em Reveal.js:
 
 > Se o link acima ainda não estiver ativo, sirva localmente: `python3 -m http.server 8080` na raiz do repositório e acesse `http://localhost:8080/apresentacao/`.
 
+## Exercício prático (Google Colab)
+
+**[Abrir notebook no Colab](https://colab.research.google.com/drive/1EMkiCFCBLLtAPd-I3udVLJMr9RGB22g1)**
+
+Especificação completa: [`exercicio.md`](exercicio.md). A entrega é o **link do seu notebook no Colab** — responda todas as perguntas nas células markdown do notebook.
+
 ## Conteúdo
 
 | Arquivo | Descrição |
 |---------|-----------|
 | [`apresentacao/`](apresentacao/) | Slides da aula (~28 slides): conceitos, YOLO, U-Net, comparação e atividades. |
 | [`revisao-bibliografica.md`](revisao-bibliografica.md) | Guia de estudos complementar com contexto bibliográfico e leitura orientada. |
-| [`exercicio.md`](exercicio.md) | Especificação do exercício prático: U-Net + Oxford-IIIT Pet no Kaggle. |
-| [`materiais/notebooks/`](materiais/notebooks/) | Notebook Jupyter para treinar U-Net no Kaggle. |
+| [`exercicio.md`](exercicio.md) | Especificação do exercício prático: U-Net + Oxford-IIIT Pet no Colab. |
+| [`materiais/notebooks/`](materiais/notebooks/) | Notebook Jupyter para treinar U-Net no Colab. |
 | [`materiais/referencias/unet-architecture-explained.pdf`](materiais/referencias/unet-architecture-explained.pdf) | Material complementar sobre a arquitetura U-Net (leitura opcional). |
 | [`unet/`](unet/) | Demo interativa da U-Net (acessível a partir do slide 22). |
 
@@ -28,7 +34,7 @@ Apresentação em Reveal.js:
 1. Leia a **revisão bibliográfica** antes da aula e para a atividade pós-aula.
 2. Acompanhe os **slides** na aula ou pelo link do GitHub Pages.
 3. Consulte o PDF da U-Net em [`materiais/referencias/`](materiais/referencias/) para aprofundar a arquitetura encoder–decoder.
-4. Publique o notebook em [`materiais/notebooks/`](materiais/notebooks/) no Kaggle para a entrega do exercício (instruções no README da pasta).
+4. Realize o exercício no **Colab** (link acima), complete os `# TODO`, responda as perguntas no notebook e envie o link ao professor.
 
 ## Referências principais
 
