@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 220" role="img" aria-label="Animação de upsampling 2×2 (nearest neighbor)">
+  <defs>
+    <style>
+      @keyframes pulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+      }
+      .cell-a { fill: #3b82f6; }
+      .cell-b { fill: #22c55e; }
+      .cell-c { fill: #f97316; }
+      .cell-d { fill: #a855f7; }
+      .replica { animation: pulse 2s ease-in-out infinite; }
+      .replica-1 { animation-delay: 0s; }
+      .replica-2 { animation-delay: 0.3s; }
+      .replica-3 { animation-delay: 0.6s; }
+      .replica-4 { animation-delay: 0.9s; }
+    </style>
+  </defs>
+
+  <rect width="480" height="220" fill="#0d0f14" rx="8"/>
+
+  <text x="240" y="28" text-anchor="middle" fill="#f8fafc" font-family="Inter,Segoe UI,sans-serif" font-size="14" font-weight="700">UpSampling 2×2 (nearest)</text>
+  <text x="240" y="46" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="10">Cada pixel é replicado em um bloco 2×2</text>
+
+  <!-- Low resolution 2x2 -->
+  <text x="90" y="75" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="600">Baixa resolução</text>
+  <g transform="translate(50, 85)">
+    <rect x="0" y="0" width="40" height="40" class="cell-a" rx="2"/>
+    <rect x="40" y="0" width="40" height="40" class="cell-b" rx="2"/>
+    <rect x="0" y="40" width="40" height="40" class="cell-c" rx="2"/>
+    <rect x="40" y="40" width="40" height="40" class="cell-d" rx="2"/>
+    <rect x="0" y="0" width="80" height="80" fill="none" stroke="#e2e8f0" stroke-width="2" rx="4"/>
+  </g>
+  <text x="90" y="185" text-anchor="middle" fill="#94a3b8" font-size="10">2 × 2 pixels</text>
+
+  <!-- Arrow -->
+  <text x="200" y="135" fill="#64748b" font-size="28">→</text>
+
+  <!-- High resolution 4x4 -->
+  <text x="340" y="75" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="600">Alta resolução</text>
+  <g transform="translate(260, 85)">
+    <!-- row 1 - cell A replicated -->
+    <rect x="0" y="0" width="20" height="20" class="cell-a replica replica-1" rx="1"/>
+    <rect x="20" y="0" width="20" height="20" class="cell-a replica replica-1" rx="1"/>
+    <rect x="40" y="0" width="20" height="20" class="cell-b replica replica-2" rx="1"/>
+    <rect x="60" y="0" width="20" height="20" class="cell-b replica replica-2" rx="1"/>
+    <!-- row 2 -->
+    <rect x="0" y="20" width="20" height="20" class="cell-a replica replica-1" rx="1"/>
+    <rect x="20" y="20" width="20" height="20" class="cell-a replica replica-1" rx="1"/>
+    <rect x="40" y="20" width="20" height="20" class="cell-b replica replica-2" rx="1"/>
+    <rect x="60" y="20" width="20" height="20" class="cell-b replica replica-2" rx="1"/>
+    <!-- row 3 -->
+    <rect x="0" y="40" width="20" height="20" class="cell-c replica replica-3" rx="1"/>
+    <rect x="20" y="40" width="20" height="20" class="cell-c replica replica-3" rx="1"/>
+    <rect x="40" y="40" width="20" height="20" class="cell-d replica replica-4" rx="1"/>
+    <rect x="60" y="40" width="20" height="20" class="cell-d replica replica-4" rx="1"/>
+    <!-- row 4 -->
+    <rect x="0" y="60" width="20" height="20" class="cell-c replica replica-3" rx="1"/>
+    <rect x="20" y="60" width="20" height="20" class="cell-c replica replica-3" rx="1"/>
+    <rect x="40" y="60" width="20" height="20" class="cell-d replica replica-4" rx="1"/>
+    <rect x="60" y="60" width="20" height="20" class="cell-d replica replica-4" rx="1"/>
+    <rect x="0" y="0" width="80" height="80" fill="none" stroke="#e2e8f0" stroke-width="2" rx="4"/>
+  </g>
+  <text x="340" y="185" text-anchor="middle" fill="#94a3b8" font-size="10">4 × 4 pixels (×4 área)</text>
+</svg>

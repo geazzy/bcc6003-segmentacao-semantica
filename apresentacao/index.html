@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BCC6003 — Segmentação Semântica (YOLO / U-Net)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- SLIDE 1 — Capa -->
+      <section data-notes="Abertura da aula. Apresente-se e contextualize: a turma já viu CNNs e classificação; hoje avançamos para tarefas com mais detalhe espacial. Tempo: ~2 min.">
+        <span class="tag tag-intro">BCC6003</span>
+        <h1>Técnicas de Segmentação Semântica</h1>
+        <h3>YOLO e U-Net</h3>
+        <p class="subtitle">
+          Bacharelado em Ciência da Computação<br />
+          Inteligência Computacional · UTFPR-CM
+        </p>
+        <p class="subtitle" style="margin-top: 2em;">Estágio em Docência <br/>
+          <span style="font-size: 0.8em;">Aluno: Geazzy B M Zanoni</span> <br/>
+          <span style="font-size: 0.8em;">Prof. Diego Bertolini Gonçalves</span>
+        </p>
+      </section>
+
+      <!-- SLIDE 2 — Pergunta motivadora -->
+      <section data-notes="Espelhe a pergunta no Mentimeter. Peça exemplos: reconhecimento facial, filtros de câmera, carros autônomos. Não corrija ainda — use as respostas na volta. Tempo: ~5 min.">
+        <span class="tag tag-intro">Abertura</span>
+        <h2>O que o computador precisa saber?</h2>
+        <div class="question-box">
+          "O que o computador precisa saber para <em>entender</em> esta imagem?"
+        </div>
+        <div class="figure-wrap">
+          <img src="img/tarefas-comparativo.svg" alt="Comparativo: classificação, detecção e segmentação" class="svg-figure" />
+        </div>
+        <p class="cite">A resposta depende da <strong>tarefa</strong> que queremos resolver.</p>
+      </section>
+
+      <!-- SLIDE 3 — Objetivos -->
+      <section data-notes="Leia os objetivos em voz alta, sem detalhar ainda. Reforce que haverá prática de fine-tuning de U-Net no Colab. Tempo: ~3 min.">
+        <span class="tag tag-intro">Objetivos</span>
+        <h2>O que vamos ver hoje?</h2>
+        <ul>
+          <li class="fragment">Separar classificação, detecção e segmentação semântica</li>
+          <li class="fragment">Explicar a lógica geral do YOLO</li>
+          <li class="fragment">Descrever a U-Net: encoder, decoder e skip connections</li>
+          <li class="fragment">Comparar as abordagens e praticar fine-tuning de U-Net no Colab</li>
+        </ul>
+      </section>
+
+      <!-- SLIDE 4 — Hierarquia das tarefas -->
+      <section data-notes="Pergunte: em qual dessas tarefas a turma já trabalhou? (classificação com CNNs). Destaque que cada nível exige mais informação espacial. Cite Goodfellow et al., 2016. Tempo: ~3 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Hierarquia das tarefas</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Tarefa</th>
+              <th>Pergunta</th>
+              <th>Saída típica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="fragment">
+              <td><strong>Classificação</strong></td>
+              <td>O que há na imagem?</td>
+              <td>Um rótulo (ex.: "gato")</td>
+            </tr>
+            <tr class="fragment">
+              <td><strong>Localização</strong></td>
+              <td>Onde está o objeto principal?</td>
+              <td>Bounding box + classe</td>
+            </tr>
+            <tr class="fragment">
+              <td><strong>Detecção</strong></td>
+              <td>Quais objetos existem e onde?</td>
+              <td>Várias bounding boxes + classes</td>
+            </tr>
+            <tr class="fragment">
+              <td><strong>Segmentação</strong></td>
+              <td>Qual pixel pertence a quê?</td>
+              <td>Máscara(s) pixel a pixel</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="cite">Goodfellow, Bengio &amp; Courville (2016)</p>
+      </section>
+
+      <!-- SLIDE 5 — Visual comparativo -->
+      <section data-notes="Use o diagrama para fixar a diferença visual. Detecção responde 'onde, grosso modo'; segmentação responde 'qual é o contorno exato'. Tempo: ~2 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Mesma cena, saídas diferentes</h2>
+        <div class="figure-wrap">
+          <img src="img/tarefas-comparativo.svg" alt="Classificação vs detecção vs segmentação" class="svg-figure" />
+        </div>
+        <p>Detecção: <span class="highlight-yolo">caixas delimitadoras</span> &nbsp;·&nbsp; Segmentação: <span class="highlight-unet">máscara densa</span></p>
+      </section>
+
+      <!-- SLIDE 6 — Tipos de segmentação -->
+      <section data-notes="Dois carros na cena: na semântica, mesma cor; na instância, máscaras separadas. Panóptica combina 'stuff' (céu, rua) com objetos contáveis. Cite Goodfellow et al., 2016; Long et al., 2015. Tempo: ~4 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Tipos de segmentação</h2>
+        <div class="two-col">
+          <div class="card card-encoder fragment">
+            <h3>Semântica</h3>
+            <p>Pixels da mesma classe recebem o mesmo rótulo — sem distinguir instâncias.</p>
+            <p style="font-size:0.8em;color:#94a3b8;">Dois carros → mesma cor de máscara.</p>
+          </div>
+          <div class="card card-decoder fragment">
+            <h3>Instância</h3>
+            <p>Cada objeto recebe um identificador próprio.</p>
+            <p style="font-size:0.8em;color:#94a3b8;">Dois carros → duas máscaras separadas.</p>
+          </div>
+        </div>
+        <div class="card card-skip fragment" style="margin-top:1em;">
+          <h3>Panóptica</h3>
+          <p>Combina semântica (classes "stuff": céu, rua) com instâncias (pessoas, veículos).</p>
+        </div>
+        <p class="cite">Goodfellow et al. (2016); Long, Shelhamer &amp; Darrell (2015)</p>
+      </section>
+
+      <!-- SLIDE 7 — Visual dos tipos de segmentação -->
+      <section data-notes="Use o diagrama para fixar visualmente a diferença entre os três tipos. Instância: contorno por objeto. Semântica: mesma cor para toda a classe. Panóptica: instâncias + regiões de fundo (stuff). Tempo: ~2 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Tipos de segmentação — comparação visual</h2>
+        <div class="figure-wrap">
+          <img
+            src="img/classificacao-segmentacao.png"
+            alt="Comparativo visual: segmentação de instâncias, semântica e panóptica em uma cena de rúgbi"
+            class="img-enlarge"
+            title="Clique para ampliar"
+          />
+        </div>
+        <p class="cite">
+          <a href="https://lapix.ufsc.br/ensino/visao/visao-computacionaldeep-learning/deep-learningsegmentacao-semantica/" target="_blank">Fonte: lapix.ufsc.br</a>
+        </p>
+      </section>
+
+      <!-- SLIDE 8 — Representação pixel a pixel -->
+      <section data-notes="Enfatize: a saída tem as mesmas dimensões espaciais da entrada (após upsampling). Cada pixel = uma classe predita. Tempo: ~2 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Representação pixel a pixel</h2>
+        <div class="two-col">
+          <div>
+            <p>A rede produz um <strong>mapa de rótulos</strong> com a mesma resolução da imagem de entrada.</p>
+            <ul>
+              <li>Entrada: imagem H × W × C</li>
+              <li>Saída: mapa H × W (índice de classe por pixel)</li>
+              <li>Ou: H × W × K canais (uma por classe)</li>
+            </ul>
+          </div>
+          <div class="card card-unet">
+            <p style="font-size:0.85em;text-align:center;margin:0;">
+              <code style="color:#38bdf8;">[H, W, 3]</code><br />↓ rede ↓<br />
+              <code style="color:#22c55e;">[H, W, K]</code><br />
+              <span style="font-size:0.8em;color:#94a3b8;">argmax → máscara colorida</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 9 — Desafios -->
+      <section data-notes="Pergunte: por que bordas finas são difíceis? (pooling reduz resolução). Oclusões exigem contexto global. Escalas variadas motivam arquiteturas multi-escala. Tempo: ~3 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Principais desafios</h2>
+        <div class="domain-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="domain-item fragment">
+            <strong>Bordas finas</strong>
+            Objetos pequenos ou contornos irregulares se perdem quando a rede reduz demais a resolução espacial.
+          </div>
+          <div class="domain-item fragment">
+            <strong>Oclusões</strong>
+            Partes de um objeto ficam escondidas; inferir a forma completa exige contexto global.
+          </div>
+          <div class="domain-item fragment">
+            <strong>Escalas variadas</strong>
+            Na mesma imagem coexistem objetos grandes e pequenos — arquiteturas multi-escala tentam mitigar isso.
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 10 — Anotação de imagens -->
+      <section data-notes="Treinamento supervisionado exige ground truth. Compare esforço: rótulo vs caixa vs máscara. CVAT e similares aceleram o fluxo. Tempo: ~4 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Anotação de imagens</h2>
+        <div class="two-col">
+          <div>
+            <p>Treinamento <strong>supervisionado</strong> exige exemplos rotulados — o modelo aprende a partir de anotações feitas por humanos (<em>ground truth</em>).</p>
+            <table style="font-size:0.55em;">
+              <thead>
+                <tr><th>Tarefa</th><th>Anotação típica</th></tr>
+              </thead>
+              <tbody>
+                <tr class="fragment"><td>Classificação</td><td>Rótulo da imagem inteira</td></tr>
+                <tr class="fragment"><td>Detecção</td><td>Caixas delimitadoras</td></tr>
+                <tr class="fragment"><td>Segmentação</td><td>Máscaras ou polígonos pixel a pixel</td></tr>
+              </tbody>
+            </table>
+            <p class="fragment" style="font-size:0.75em;color:#94a3b8;margin-top:0.6em;">Segmentação costuma ser o gargalo — mais tempo por imagem que caixas ou rótulos.</p>
+          </div>
+          <div>
+            <p style="font-size:0.85em;margin-bottom:0.6em;">Ferramentas que aceleram o fluxo:</p>
+            <div class="domain-grid" style="grid-template-columns:1fr;font-size:0.58em;">
+              <div class="domain-item fragment">
+                <strong><a href="https://www.cvat.ai/" target="_blank" rel="noopener">CVAT</a></strong>
+                Caixas, polígonos, máscaras e vídeo — colaborativo, open source (OpenCV)
+              </div>
+              <div class="domain-item fragment">
+                <strong><a href="https://labelstud.io/" target="_blank" rel="noopener">Label Studio</a></strong>
+                Interface flexível para imagem, texto e áudio — exportação em vários formatos
+              </div>
+              <div class="domain-item fragment">
+                <strong><a href="https://roboflow.com/" target="_blank" rel="noopener">Roboflow</a></strong>
+                Anotação, versionamento de datasets e export para YOLO, COCO, etc.
+              </div>
+              <div class="domain-item fragment">
+                <strong><a href="https://github.com/HumanSignal/labelImg" target="_blank" rel="noopener">LabelImg</a></strong>
+                Anotação simples de bounding boxes — clássica para treino YOLO
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="cite">Goodfellow et al. (2016); Sofiiuk &amp; Konushin — CVAT (WACV, 2020)</p>
+      </section>
+
+      <!-- SLIDE 10b — Repositórios de datasets -->
+      <section data-notes="Muitos projetos partem de datasets já anotados. Compare Kaggle (comunidade), Roboflow Universe (export pronto) e Zenodo (acadêmico/DOI). Critérios: licença, formato das máscaras, tamanho, viés. Pergunta: dataset médico com paper → Zenodo. Ponte: Oxford Pets via torchvision no exercício. Tempo: ~3 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Onde encontrar datasets anotados?</h2>
+        <p style="font-size:0.8em;">Máscaras pixel a pixel exigem muito trabalho — muitos projetos partem de conjuntos já rotulados.</p>
+        <div class="domain-grid" style="grid-template-columns: repeat(3, 1fr); font-size:0.58em;">
+          <div class="domain-item fragment">
+            <strong><a href="https://www.kaggle.com/datasets?search=image+segmentation&amp;tags=13207-Computer+Vision" target="_blank" rel="noopener">Kaggle</a></strong>
+            Competições e datasets da comunidade — máscaras e polígonos em formatos variados
+          </div>
+          <div class="domain-item fragment">
+            <strong><a href="https://universe.roboflow.com/" target="_blank" rel="noopener">Roboflow Universe</a></strong>
+            Catálogo público de datasets com exportação pronta (YOLO, COCO, etc.) — distinto da ferramenta de anotação
+          </div>
+          <div class="domain-item fragment">
+            <strong><a href="https://zenodo.org/search?q=image%20segmentation&amp;l=list&amp;p=1&amp;s=10&amp;sort=bestmatch" target="_blank" rel="noopener">Zenodo</a></strong>
+            Repositório acadêmico de dados abertos (DOI) — comum em artigos de saúde e pesquisa reprodutível
+          </div>
+        </div>
+        <p class="fragment" style="font-size:0.72em;color:#94a3b8;margin-top:0.8em;">No exercício usamos o <strong>Oxford-IIIT Pet</strong> via <code>torchvision</code> — outra fonte além desses portais.</p>
+        <p class="fragment cite" style="font-size:0.7em;">Verifique licença e formato antes de treinar.</p>
+      </section>
+
+      <!-- SLIDE 11 — Ponte FCN → U-Net -->
+      <section data-notes="FCN (Long et al., 2015) mostrou que CNNs treinadas para classificação podem produzir mapas densos. U-Net (2015) refinou com encoder-decoder e skip connections. Não aprofundar FCN — é ponte histórica. Tempo: ~2 min.">
+        <span class="tag tag-intro">Fundamentos</span>
+        <h2>Do FCN à U-Net</h2>
+        <p>Long, Shelhamer e Darrell (2015) demonstraram que redes <strong>totalmente convolucionais</strong> (FCN) tornaram viável produzir mapas densos a partir de CNNs de classificação.</p>
+        <p class="fragment">Ronneberger et al. (2015) propuseram a <strong>U-Net</strong>: encoder-decoder com skip connections para recuperar detalhes finos — referência em segmentação biomédica.</p>
+        <p class="cite">Long et al. (CVPR, 2015) · Ronneberger et al. (MICCAI, 2015)</p>
+      </section>
+
+      <!-- SLIDE 11 — YOLO: o problema -->
+      <section data-notes="Uma frase basta: antes do YOLO, detecção era lenta demais para tempo real. Não entrar em R-CNN. Cite Redmon et al., 2016. Tempo: ~2 min.">
+        <span class="tag tag-yolo">YOLO</span>
+        <h2>O problema da velocidade</h2>
+        <p>Métodos de detecção anteriores combinavam várias etapas — proposta de regiões + classificador — gerando <strong>latência elevada</strong> para aplicações em tempo real.</p>
+        <p class="fragment">Redmon et al. (2016) reformularam detecção como <strong>um único problema de regressão</strong>: a rede olha a imagem uma vez e prediz caixas e classes diretamente.</p>
+        <p class="cite">Redmon et al. (CVPR, 2016)</p>
+      </section>
+
+      <!-- SLIDE 12 — You Only Look Once -->
+      <section data-notes="Desenhe mentalmente a grade S×S no quadro se possível. Cada célula: responsável por objetos cujo centro cai nela. Três predições: bbox, objectness, classe. Tempo: ~5 min.">
+        <span class="tag tag-yolo">YOLO</span>
+        <h2>You Only Look Once</h2>
+        <div class="two-col grid-sxs">
+          <div>
+            <ol style="padding-left:1.2em;font-size:0.9em;">
+              <li class="fragment">Imagem dividida em grade <strong>S × S</strong></li>
+              <li class="fragment">Cada célula detecta objetos cujo <strong>centro</strong> cai nela</li>
+              <li class="fragment">Para cada célula, a rede prediz:
+                <ul style="margin-top:0.4em;">
+                  <li>Bounding boxes (coordenadas)</li>
+                  <li>Objectness score</li>
+                  <li>Probabilidades de classe</li>
+                </ul>
+              </li>
+            </ol>
+          </div>
+          <div class="figure-wrap figure-wrap-sm">
+            <img src="img/yolo-grade.svg" alt="Diagrama didático do YOLOv1: grade S×S, células responsáveis e predições por célula — inspirado em Redmon et al., 2016" class="svg-figure" />
+          </div>
+        </div>
+        <p class="cite">Redmon et al. (2016)</p>
+      </section>
+
+      <!-- SLIDE 13 — Saída do detector -->
+      <section data-notes="Contraste explícito: YOLO entrega caixas; segmentação entrega máscara. Variantes -seg do YOLO adicionam máscaras por instância, mas o foco da aula é entender a diferença conceitual. Tempo: ~3 min.">
+        <span class="tag tag-yolo">YOLO</span>
+        <h2>Saída do detector</h2>
+        <div class="two-col">
+          <div class="card card-yolo fragment">
+            <h3>YOLO (detecção)</h3>
+            <ul>
+              <li>Bounding boxes</li>
+              <li>Classe por objeto</li>
+              <li>Score de confiança</li>
+            </ul>
+            <p style="font-size:0.8em;color:#94a3b8;">Responde: <em>onde, grosso modo</em></p>
+          </div>
+          <div class="card card-decoder fragment">
+            <h3>Segmentação densa</h3>
+            <ul>
+              <li>Máscara pixel a pixel</li>
+              <li>Contorno preciso</li>
+              <li>Mapa de classes</li>
+            </ul>
+            <p style="font-size:0.8em;color:#94a3b8;">Responde: <em>qual é a forma exata</em></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 14 — Por que é rápido -->
+      <section data-notes="Uma passagem forward = latência baixa. Adequado a vídeo 30 fps, veículos autônomos, vigilância. Demo ao vivo: repositório aula_yolo26 (YOLO26 pose + Flask). Tempo: ~4 min.">
+        <span class="tag tag-yolo">YOLO</span>
+        <h2>Por que é rápido?</h2>
+        <ul>
+          <li class="fragment"><strong>Uma passagem forward</strong> — sem pipeline multi-etapas</li>
+          <li class="fragment">Projetado para <strong>tempo real</strong> (vigilância, automotivo, robótica)</li>
+          <li class="fragment">Excelente base para <strong>transfer learning</strong> em novos domínios</li>
+        </ul>
+        <div class="fragment" style="margin-top:1em;text-align:center;">
+          <p style="font-size:0.8em;color:#94a3b8;margin-bottom:0.5em;">Demonstração prática: detecção de pose em tempo real com YOLO26 (Flask + webcam)</p>
+          <a class="btn-link" href="https://github.com/geazzy/aula_yolo26" target="_blank" rel="noopener">Abrir repositório da demo ↗</a>
+        </div>
+        <p class="cite">Redmon et al. (2016)</p>
+      </section>
+
+      <!-- SLIDE 15 — Variantes na prática (+ vertical opcional) -->
+      <section>
+        <section data-notes="Não entrar em YOLO26/NMS/DFL — material está na revisão bibliográfica. Foque: detecção é o caso padrão; -seg adiciona máscaras por instância. Tempo: ~3 min.">
+          <span class="tag tag-yolo">YOLO</span>
+          <h2>Variantes na prática</h2>
+          <table class="compare-table">
+            <tr>
+              <td>Detecção</td>
+              <td>Bounding boxes + classes — caso de uso mais comum</td>
+            </tr>
+            <tr>
+              <td>Segmentação de instâncias (<code>-seg</code>)</td>
+              <td>Adiciona máscaras por objeto detectado (Ultralytics)</td>
+            </tr>
+          </table>
+          <p class="fragment" style="font-size:0.75em;color:#94a3b8;margin-top:1em;">
+            Evolução detalhada (YOLOv1→YOLO26, NMS, benchmarks) → ver <em>revisao-bibliografica.md</em>
+          </p>
+          <p class="cite">Jocher et al. — documentação Ultralytics</p>
+        </section>
+        <section data-notes="Opcional — use se a turma perguntar sobre arquitetura interna. Pule se estiver apertado no tempo. Aponte a seta vermelha: tudo acontece em uma passagem forward.">
+          <span class="tag tag-yolo">Opcional</span>
+          <h3>Visão geral da arquitetura</h3>
+          <div class="figure-wrap">
+            <img src="img/yolo-arquitetura.svg" alt="Diagrama didático da arquitetura YOLO: entrada RGB, backbone, neck multi-escala, head e saída com bounding boxes — uma passagem forward" class="svg-figure" />
+          </div>
+          <p class="cite">Redmon et al. (2016); Lin et al. (2017) — FPN; Ultralytics — diagrama didático</p>
+        </section>
+      </section>
+
+      <!-- SLIDE 16 — U-Net origem -->
+      <section data-notes="Contexto biomédico: errar poucos pixels pode mudar estadiamento ou volume tumoral. U-Net nasceu para recuperar localização precisa. Cite Ronneberger et al., 2015. Tempo: ~3 min.">
+        <span class="tag tag-unet">U-Net</span>
+        <h2>Origem: imagens biomédicas</h2>
+        <p>Ronneberger, Fischer e Brox (2015) propuseram a U-Net para segmentação de imagens médicas — contexto em que <strong>errar poucos pixels</strong> pode alterar completamente a interpretação clínica.</p>
+        <ul class="fragment">
+          <li>Delimitar tumores, órgãos ou lesões</li>
+          <li>Recuperar <strong>localização precisa</strong> após camadas de pooling</li>
+          <li>Funcionar bem com <strong>poucos dados</strong> anotados (transfer learning)</li>
+        </ul>
+        <p class="cite">Ronneberger et al. (MICCAI, 2015)</p>
+      </section>
+
+      <!-- SLIDE 17 — Visão geral em U -->
+      <section data-notes="Aponte o formato em U no diagrama. Encoder à esquerda (contrativo), decoder à direita (expansivo), skip connections atravessando o vale. Tempo: ~4 min.">
+        <span class="tag tag-unet">U-Net</span>
+        <h2>Visão geral: formato em "U"</h2>
+        <div class="figure-wrap">
+          <img
+            src="img/unet-original.png"
+            alt="Arquitetura U-Net — figura original de Ronneberger et al. (2015): caminho contrativo, bottleneck, caminho expansivo e skip connections"
+            class="img-enlarge"
+            title="Clique para ampliar"
+          />
+        </div>
+        <p class="cite">Ronneberger et al. (2015) — figura original do artigo</p>
+      </section>
+
+      <!-- SLIDE 18 — Encoder -->
+      <section data-notes="Encoder: conv + max pooling. Resolução diminui, canais aumentam. Captura contexto global — 'o que' está na imagem. Cada bloco no paper: 2 conv 3×3 + ReLU + pooling. Tempo: ~3 min.">
+        <span class="tag tag-unet">U-Net</span>
+        <h2>Encoder (caminho contrativo)</h2>
+        <div class="card card-encoder" style="max-width:700px;margin:0 auto;text-align:left;">
+          <ul>
+            <li>Blocos de <strong>convolução</strong> + <strong>max pooling</strong></li>
+            <li>Resolução espacial <strong>↓</strong> · Canais <strong>↑</strong></li>
+            <li>Captura <strong>contexto global</strong>: relações de alto nível</li>
+          </ul>
+        </div>
+        <p class="fragment" style="font-size:0.8em;margin-top:1em;">Cada pixel em baixa resolução "enxerga" uma vizinhança grande na imagem original.</p>
+        <p class="cite">Ronneberger et al. (2015); Goodfellow et al. (2016)</p>
+      </section>
+
+      <!-- SLIDE 19 — Bottleneck -->
+      <section data-notes="Bottleneck = representação mais compacta e abstrata. Menor resolução, mais canais. É o 'vale' do U. Tempo: ~2 min.">
+        <span class="tag tag-unet">U-Net</span>
+        <h2>Bottleneck</h2>
+        <div class="card" style="border-left:4px solid #f97316;max-width:600px;margin:1em auto;">
+          <p>Representação <strong>compacta de alto nível</strong> no ponto mais profundo da rede.</p>
+          <p style="font-size:0.85em;color:#94a3b8;margin-top:0.5em;">
+            Resolução mínima · máximo de contexto semântico · mínimo de detalhe espacial
+          </p>
+        </div>
+        <p>Sem recuperar resolução a partir daqui, os contornos ficariam <strong>borrados</strong>.</p>
+      </section>
+
+      <!-- SLIDE 20 — Decoder -->
+      <section data-notes="Upsampling restaura resolução. Convolução transposta aprende a expandir; UpSampling2D replica/interpola. Mostre o GIF ou a figura Keras. Tempo: ~4 min.">
+        <span class="tag tag-unet">U-Net</span>
+        <h2>Decoder (caminho expansivo)</h2>
+        <div class="two-col">
+          <div>
+            <ul>
+              <li><strong>Upsampling</strong> ou <strong>convolução transposta</strong></li>
+              <li>Resolução espacial <strong>↑</strong></li>
+              <li>Reconstrói mapa denso a partir do bottleneck</li>
+            </ul>
+            <p style="font-size:0.8em;color:#94a3b8;">Sozinho, tende a produzir regiões aproximadas — sem bordas finas.</p>
+          </div>
+          <div class="figure-wrap figure-wrap-sm">
+            <img src="img/upsampling.svg" alt="Upsampling 2×2 — replicação de pixels (nearest neighbor)" class="svg-figure" />
+          </div>
+        </div>
+        <p class="cite">UpSampling2D — documentação Keras</p>
+      </section>
+
+      <!-- SLIDE 21 — Skip connections -->
+      <section data-notes="Diferencial da U-Net: concatena features de alta resolução do encoder com o decoder. Preserva bordas e melhora gradiente. Pergunte: o que acontece se removermos as skips? (contornos borrados). Tempo: ~5 min.">
+        <span class="tag tag-unet">U-Net</span>
+        <h2>Skip connections</h2>
+        <div class="card card-skip" style="max-width:750px;margin:0 auto;text-align:left;">
+          <ul>
+            <li class="fragment"><strong>Concatenação</strong> entre camadas correspondentes do encoder e decoder</li>
+            <li class="fragment">Preserva <strong>detalhes espaciais</strong> (bordas, texturas finas)</li>
+            <li class="fragment">Melhora <strong>propagação do gradiente</strong> no treinamento</li>
+            <li class="fragment">Saída na <strong>mesma resolução</strong> da entrada</li>
+          </ul>
+        </div>
+        <p class="fragment" style="font-size:0.8em;margin-top:1em;">
+          Intuição: baixa resolução classifica a região; alta resolução localiza a fronteira.
+        </p>
+        <p class="cite">Ronneberger et al. (2015)</p>
+      </section>
+
+      <!-- SLIDE 22 — Demo interativa (+ vertical opcional) -->
+      <section>
+        <section data-notes="Abra unet/index.html em nova aba. Percorra as etapas com a turma ou projete em segunda tela. Tempo: ~5 min.">
+          <span class="tag tag-unet">U-Net</span>
+          <h2>Demo interativa</h2>
+          <p>Visualização passo a passo da arquitetura U-Net — encoder, bottleneck, decoder e skip connections.</p>
+          <a class="btn-link" href="../unet/index.html" target="_blank" rel="noopener">Abrir visualização U-Net ↗</a>
+          <p class="cite" style="margin-top:1.5em;">Inspirada em Ronneberger et al. (2015), com simplificações didáticas</p>
+        </section>
+        <section data-notes="Opcional — cite U-Net++ e Attention U-Net sem aprofundar. Pule se faltar tempo.">
+          <span class="tag tag-unet">Opcional</span>
+          <h3>Variações na literatura</h3>
+          <table style="font-size:0.65em;">
+            <tr><th>Variação</th><th>Ideia</th></tr>
+            <tr><td>U-Net++</td><td>Conexões aninhadas entre decoders (Zhou et al., 2020)</td></tr>
+            <tr><td>Attention U-Net</td><td>Atenção nas skip connections (Oktay et al., 2018)</td></tr>
+            <tr><td>Residual U-Net</td><td>Blocos residuais para redes mais profundas</td></tr>
+          </table>
+        </section>
+      </section>
+
+      <!-- SLIDE 23 — YOLO vs U-Net -->
+      <section data-notes="Não competem pelo mesmo problema. Pergunte qual usariam em cada exemplo. Reforce: a escolha depende da pergunta e do tipo de anotação disponível. Tempo: ~5 min.">
+        <span class="tag tag-intro">Comparação</span>
+        <h2>YOLO vs U-Net</h2>
+        <table style="font-size:0.58em;">
+          <thead>
+            <tr><th>Critério</th><th>YOLO</th><th>U-Net</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Objetivo</td><td>Detecção (variantes -seg para instâncias)</td><td>Segmentação semântica pixel a pixel</td></tr>
+            <tr><td>Velocidade</td><td>Muito alta</td><td>Moderada</td></tr>
+            <tr><td>Saída</td><td>Bounding boxes</td><td>Máscara densa</td></tr>
+            <tr><td>Anotação</td><td>Caixas delimitadoras</td><td>Máscaras pixel a pixel</td></tr>
+            <tr><td>Aplicações</td><td>Vigilância, automotivo</td><td>Medicina, satélite, agro</td></tr>
+          </tbody>
+        </table>
+        <ul class="example-list fragment" style="margin-top:0.8em;">
+          <li><span class="highlight-yolo">Pedestre em ADAS</span> → YOLO (baixa latência)</li>
+          <li><span class="highlight-unet">Tumor em ressonância</span> → U-Net (contorno preciso)</li>
+          <li><span class="highlight-yolo">Contagem em evento</span> → YOLO (caixas bastam)</li>
+          <li><span class="highlight-unet">Mapeamento de lavoura</span> → U-Net (área afetada)</li>
+        </ul>
+      </section>
+
+      <!-- SLIDE 24 — Métricas -->
+      <section data-notes="Fórmulas ficam nas notas: IoU = interseção/união; Dice = 2|A∩B|/(|A|+|B|). mAP para detecção. Na prática da U-Net, o limiar na Sigmoid (ex.: 0,5) define o contorno da máscara binária. Tempo: ~3 min.">
+        <span class="tag tag-intro">Métricas</span>
+        <h2>Métricas essenciais</h2>
+        <div class="domain-grid" style="grid-template-columns: repeat(3, 1fr); font-size:0.62em;">
+          <div class="domain-item fragment">
+            <strong>IoU / mIoU</strong>
+            Sobreposição entre predição e ground truth. Padrão em segmentação semântica.
+          </div>
+          <div class="domain-item fragment">
+            <strong>mAP</strong>
+            Precisão média em detecção (YOLO). Combina precisão e recall em vários limiares de IoU.
+          </div>
+          <div class="domain-item fragment">
+            <strong>Dice</strong>
+            Muito usado em imagens biomédicas. Sensível a estruturas pequenas.
+          </div>
+        </div>
+        <p class="fragment" style="font-size:0.75em;margin-top:1em;color:#94a3b8;">
+          Na prática da U-Net: o limiar na Sigmoid (ex.: 0,5) define quais pixels entram na máscara binária.
+        </p>
+        <aside class="cite" style="display:none;">Notas: IoU = |A∩B|/|A∪B|; Dice = 2|A∩B|/(|A|+|B|)</aside>
+      </section>
+
+      <!-- SLIDE 25 — Aplicações -->
+      <section data-notes="Um exemplo por domínio. Conecte com a atividade em duplas que vem a seguir. Tempo: ~3 min.">
+        <span class="tag tag-intro">Aplicações</span>
+        <h2>Aplicações por domínio</h2>
+        <div class="domain-grid">
+          <div class="domain-item fragment">
+            <strong>Saúde</strong>
+            Segmentação de tumores, órgãos e lesões (U-Net e variantes)
+          </div>
+          <div class="domain-item fragment">
+            <strong>Automotivo</strong>
+            Detecção de pedestres e obstáculos em tempo real (YOLO)
+          </div>
+          <div class="domain-item fragment">
+            <strong>Agronegócio</strong>
+            Mapeamento de lavouras por drone/satélite (segmentação densa)
+          </div>
+          <div class="domain-item fragment">
+            <strong>Segurança</strong>
+            Contagem e monitoramento de pessoas (YOLO)
+          </div>
+          <div class="domain-item fragment">
+            <strong>Indústria</strong>
+            Inspeção de qualidade e detecção de defeitos
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 26 — Atividade em duplas -->
+      <section data-notes="Distribua fichas ou use este slide como guia. 10 min em duplas. Circule pela sala. Peça justificativa com base em velocidade, saída e anotação. Tempo: ~10 min.">
+        <span class="tag tag-activity">Atividade</span>
+        <h2>Discussão em duplas</h2>
+        <p>Para cada caso, escolham <strong>YOLO</strong> ou <strong>U-Net</strong> e justifiquem:</p>
+        <ol style="font-size:0.75em;text-align:left;max-width:700px;margin:0 auto;">
+          <li class="fragment"><strong>Contagem de pessoas</strong> em evento ao vivo</li>
+          <li class="fragment"><strong>Delimitar tumor</strong> em ressonância magnética</li>
+          <li class="fragment"><strong>Detectar pedestres</strong> em sistema ADAS (tempo real)</li>
+          <li class="fragment"><strong>Mapear lavoura</strong> a partir de imagens de drone</li>
+        </ol>
+        <p class="fragment cite">Critérios: velocidade · tipo de saída · tipo de anotação disponível</p>
+      </section>
+
+      <!-- SLIDE 27 — Prática Colab -->
+      <section data-notes="Transição para os computadores. Notebook U-Net (Oxford-IIIT Pet). Guie: (1) habilitar GPU no Colab; (2) pip install segmentation-models-pytorch; (3) configurar smp.Unet com ResNet18+ImageNet; (4) completar loop de treino TODO; (5) treinar 5 épocas e visualizar máscaras. Tempo: ~15 min. Entrega: questões conceituais (seção 10).">
+        <span class="tag tag-activity">Prática</span>
+        <h2>Mãos na massa: Colab</h2>
+        <ul style="font-size:0.85em;">
+          <li>Segmentação binária (animal vs. fundo) no <strong>Oxford-IIIT Pet</strong></li>
+          <li>Configurar U-Net com <code>segmentation_models.pytorch</code> (encoder ResNet18 + ImageNet)</li>
+          <li>Completar loop de treino, gráfico de loss e visualização de máscaras</li>
+          <li>Discutir: onde a rede acertou? O que explicaria os erros?</li>
+        </ul>
+        <a class="btn-link" href="https://colab.research.google.com/drive/1m4oUcRVptl66Rzq8uGJLXvN-k1bPU2TC?usp=sharing" target="_blank" rel="noopener">Abrir notebook no Colab ↗</a>
+        <p style="font-size:0.7em;margin-top:0.8em;color:#94a3b8;">Ative GPU em Runtime → Change runtime type. Entrega: questões conceituais (seção 10 do notebook).</p>
+      </section>
+
+      <!-- SLIDE 28 — Síntese e referências -->
+      <section data-notes="Retome os 4 pontos principais. Abra espaço para perguntas finais. Indique a revisão bibliográfica como material de aprofundamento. Tempo: ~5 min.">
+        <span class="tag tag-intro">Síntese</span>
+        <h2>Pontos principais</h2>
+        <ul class="synthesis-list">
+          <li>Classificação → detecção → segmentação: níveis crescentes de detalhe espacial</li>
+          <li>YOLO: uma passagem, tempo real, bounding boxes</li>
+          <li>U-Net: encoder-decoder + skip connections, máscara densa</li>
+          <li>A escolha depende da pergunta e da anotação disponível</li>
+        </ul>
+        <h3 style="margin-top:1.2em;font-size:0.9em;">Referências principais</h3>
+        <div class="refs">
+          <p>Goodfellow, I.; Bengio, Y.; Courville, A. <em>Deep Learning</em>. MIT Press, 2016.</p>
+          <p>Redmon, J. et al. You Only Look Once. CVPR, 2016.</p>
+          <p>Ronneberger, O. et al. U-Net. MICCAI, 2015.</p>
+          <p>Long, J. et al. Fully Convolutional Networks. CVPR, 2015.</p>
+          <p>Jocher, G. et al. Ultralytics YOLO. docs.ultralytics.com</p>
+        </div>
+        <p style="margin-top:1em;font-size:0.8em;">Material complementar: <code>revisao-bibliografica.md</code></p>
+        <p class="question-box" style="font-size:0.85em;margin-top:0.8em;padding:0.8em;">Perguntas?</p>
+      </section>
+
+    </div>
+  </div>
+
+  <div id="img-lightbox" class="img-lightbox" hidden aria-hidden="true">
+    <button type="button" class="img-lightbox-close" aria-label="Fechar imagem ampliada">×</button>
+    <img class="img-lightbox-img" alt="" />
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      progress: true,
+      center: true,
+      transition: 'slide',
+      width: 1280,
+      height: 720,
+      margin: 0.08,
+      plugins: []
+    });
+
+    (function () {
+      const lightbox = document.getElementById('img-lightbox');
+      const lightboxImg = lightbox.querySelector('.img-lightbox-img');
+      const closeBtn = lightbox.querySelector('.img-lightbox-close');
+
+      function openLightbox(img) {
+        lightboxImg.src = img.currentSrc || img.src;
+        lightboxImg.alt = img.alt;
+        lightbox.hidden = false;
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('lightbox-open');
+      }
+
+      function closeLightbox() {
+        lightbox.hidden = true;
+        lightbox.setAttribute('aria-hidden', 'true');
+        lightboxImg.removeAttribute('src');
+        document.body.classList.remove('lightbox-open');
+      }
+
+      document.querySelectorAll('.img-enlarge').forEach(function (img) {
+        img.addEventListener('click', function (event) {
+          event.stopPropagation();
+          openLightbox(img);
+        });
+      });
+
+      lightbox.addEventListener('click', function (event) {
+        if (event.target === lightbox || event.target === closeBtn) {
+          closeLightbox();
+        }
+      });
+
+      lightboxImg.addEventListener('click', function (event) {
+        event.stopPropagation();
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (!lightbox.hidden && event.key === 'Escape') {
+          event.stopPropagation();
+          closeLightbox();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

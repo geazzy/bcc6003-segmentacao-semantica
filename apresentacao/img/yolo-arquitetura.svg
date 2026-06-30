@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-label="Diagrama didático da arquitetura YOLO para detecção de objetos: imagem RGB entra no backbone, passa pelo neck multi-escala e pelo head, produzindo bounding boxes e classes em uma única passagem forward">
+  <defs>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c2030"/>
+      <stop offset="100%" stop-color="#141720"/>
+    </linearGradient>
+    <linearGradient id="backbone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="neck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#7e22ce"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+    <pattern id="scene" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#2a3148"/>
+      <circle cx="5" cy="6" r="2.5" fill="#4ade80" opacity="0.45"/>
+      <rect x="10" y="10" width="4" height="4" fill="#60a5fa" opacity="0.35"/>
+    </pattern>
+    <marker id="arrow-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#ef4444"/>
+    </marker>
+    <marker id="arrow-gray" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="420" fill="#0d0f14" rx="8"/>
+
+  <text x="450" y="28" text-anchor="middle" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="16" font-weight="700">YOLO &#8212; detec&#231;&#227;o de objetos em uma passagem forward</text>
+  <text x="450" y="48" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="11">Imagem &#8594; features &#8594; predi&#231;&#245;es (caixas + classes)</text>
+
+  <!-- 1. Entrada -->
+  <g id="entrada">
+    <rect x="24" y="72" width="108" height="200" fill="url(#panel)" stroke="#2a2f45" rx="10"/>
+    <text x="78" y="96" text-anchor="middle" fill="#ef4444" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">Entrada</text>
+    <rect x="38" y="108" width="80" height="80" fill="url(#scene)" stroke="#2a2f45" rx="6"/>
+    <ellipse cx="62" cy="148" rx="14" ry="11" fill="#94a3b8"/>
+    <ellipse cx="92" cy="155" rx="10" ry="8" fill="#64748b"/>
+    <text x="78" y="206" text-anchor="middle" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="11" font-weight="600">Imagem RGB</text>
+    <text x="78" y="224" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="10">640 &#215; 640</text>
+    <text x="78" y="252" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="9">tensor de pixels</text>
+  </g>
+
+  <line x1="132" y1="172" x2="148" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow-gray)"/>
+
+  <!-- 2. Backbone -->
+  <g id="backbone-block">
+    <rect x="152" y="72" width="128" height="200" fill="url(#panel)" stroke="#2a2f45" rx="10"/>
+    <text x="216" y="96" text-anchor="middle" fill="#3b82f6" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">Backbone</text>
+    <rect x="168" y="110" width="96" height="118" fill="url(#backbone)" rx="6" opacity="0.92"/>
+    <rect x="178" y="120" width="76" height="14" fill="#fff" opacity="0.15" rx="2"/>
+    <rect x="178" y="140" width="76" height="14" fill="#fff" opacity="0.12" rx="2"/>
+    <rect x="178" y="160" width="76" height="14" fill="#fff" opacity="0.10" rx="2"/>
+    <rect x="178" y="180" width="76" height="14" fill="#fff" opacity="0.08" rx="2"/>
+    <rect x="178" y="200" width="76" height="14" fill="#fff" opacity="0.06" rx="2"/>
+    <text x="216" y="248" text-anchor="middle" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="10" font-weight="600">CNN / Darknet-style</text>
+    <text x="216" y="264" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="9">contexto sem&#226;ntico</text>
+  </g>
+
+  <line x1="280" y1="172" x2="296" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow-gray)"/>
+
+  <!-- 3. Neck -->
+  <g id="neck-block">
+    <rect x="300" y="72" width="196" height="200" fill="url(#panel)" stroke="#2a2f45" rx="10"/>
+    <text x="398" y="96" text-anchor="middle" fill="#a855f7" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">Neck</text>
+    <text x="398" y="112" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="9">agrega&#231;&#227;o multi-escala (ex.: FPN, Lin et al. 2017)</text>
+
+    <rect x="316" y="128" width="164" height="36" fill="url(#neck)" rx="5" opacity="0.85"/>
+    <text x="332" y="150" fill="#fff" font-family="Inter,Segoe UI,sans-serif" font-size="10" font-weight="600">P3</text>
+    <text x="368" y="150" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="9">objetos pequenos &#183; alta resolu&#231;&#227;o</text>
+
+    <rect x="316" y="172" width="164" height="36" fill="url(#neck)" rx="5" opacity="0.75"/>
+    <text x="332" y="194" fill="#fff" font-family="Inter,Segoe UI,sans-serif" font-size="10" font-weight="600">P4</text>
+    <text x="368" y="194" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="9">objetos m&#233;dios</text>
+
+    <rect x="316" y="216" width="164" height="36" fill="url(#neck)" rx="5" opacity="0.65"/>
+    <text x="332" y="238" fill="#fff" font-family="Inter,Segoe UI,sans-serif" font-size="10" font-weight="600">P5</text>
+    <text x="368" y="238" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="9">objetos grandes &#183; contexto amplo</text>
+  </g>
+
+  <line x1="496" y1="172" x2="512" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow-gray)"/>
+
+  <!-- 4. Head -->
+  <g id="head-block">
+    <rect x="516" y="72" width="156" height="200" fill="url(#panel)" stroke="#2a2f45" rx="10"/>
+    <text x="594" y="96" text-anchor="middle" fill="#22c55e" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">Head</text>
+    <text x="594" y="112" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="9">predi&#231;&#245;es por escala</text>
+
+    <rect x="532" y="126" width="124" height="38" fill="url(#head)" rx="5" opacity="0.9"/>
+    <text x="594" y="150" text-anchor="middle" fill="#fff" font-family="Inter,Segoe UI,sans-serif" font-size="9" font-weight="600">bounding boxes</text>
+
+    <rect x="532" y="172" width="124" height="38" fill="url(#head)" rx="5" opacity="0.78"/>
+    <text x="594" y="196" text-anchor="middle" fill="#fff" font-family="Inter,Segoe UI,sans-serif" font-size="9" font-weight="600">objectness</text>
+
+    <rect x="532" y="218" width="124" height="38" fill="url(#head)" rx="5" opacity="0.66"/>
+    <text x="594" y="242" text-anchor="middle" fill="#fff" font-family="Inter,Segoe UI,sans-serif" font-size="9" font-weight="600">prob. de classe</text>
+  </g>
+
+  <line x1="672" y1="172" x2="688" y2="172" stroke="#64748b" stroke-width="2" marker-end="url(#arrow-gray)"/>
+
+  <!-- 5. Sa&#237;da -->
+  <g id="saida">
+    <rect x="692" y="72" width="180" height="200" fill="url(#panel)" stroke="#2a2f45" rx="10"/>
+    <text x="786" y="96" text-anchor="middle" fill="#22c55e" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">Sa&#237;da</text>
+    <rect x="716" y="108" width="140" height="100" fill="url(#scene)" stroke="#2a2f45" rx="6"/>
+    <ellipse cx="758" cy="158" rx="22" ry="17" fill="#94a3b8"/>
+    <rect x="732" y="138" width="52" height="42" fill="none" stroke="#ef4444" stroke-width="2.2" rx="3"/>
+    <text x="758" y="132" text-anchor="middle" fill="#ef4444" font-family="Inter,Segoe UI,sans-serif" font-size="9" font-weight="600">gato 0,91</text>
+    <ellipse cx="820" cy="168" rx="14" ry="11" fill="#64748b"/>
+    <rect x="804" y="152" width="32" height="32" fill="none" stroke="#ef4444" stroke-width="2.2" rx="3"/>
+    <text x="820" y="147" text-anchor="middle" fill="#ef4444" font-family="Inter,Segoe UI,sans-serif" font-size="8" font-weight="600">c&#227;o 0,84</text>
+    <text x="786" y="228" text-anchor="middle" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="10" font-weight="600">caixas + r&#243;tulos</text>
+    <text x="786" y="246" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="9">detec&#231;&#245;es na imagem</text>
+  </g>
+
+  <!-- Seta &#250;nica cont&#237;nua -->
+  <path d="M 40 310 Q 450 340 860 310" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" marker-end="url(#arrow-red)" opacity="0.95"/>
+  <rect x="318" y="318" width="264" height="22" fill="#0d0f14" rx="4" opacity="0.85"/>
+  <text x="450" y="333" text-anchor="middle" fill="#ef4444" font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="700">uma passagem forward</text>
+  <text x="450" y="358" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="10">sem pipeline multi-etapas (propostas &#8594; refinamento &#8594; classifica&#231;&#227;o)</text>
+
+  <text x="450" y="398" text-anchor="middle" fill="#64748b" font-family="Inter,Segoe UI,sans-serif" font-size="9">Diagrama did&#225;tico inspirado em Redmon et al. (2016) e arquiteturas YOLO modernas (Ultralytics)</text>
+</svg>

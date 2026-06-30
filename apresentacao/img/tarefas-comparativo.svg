@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 280" role="img" aria-label="Comparativo: classificação, detecção e segmentação">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c2030"/>
+      <stop offset="100%" stop-color="#141720"/>
+    </linearGradient>
+    <pattern id="scene" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#2a3148"/>
+      <circle cx="6" cy="8" r="3" fill="#4ade80" opacity="0.5"/>
+      <rect x="12" y="12" width="6" height="6" fill="#60a5fa" opacity="0.4"/>
+    </pattern>
+  </defs>
+
+  <rect width="900" height="280" fill="#0d0f14" rx="8"/>
+
+  <!-- Painel 1: Classificação -->
+  <g transform="translate(20, 20)">
+    <rect width="260" height="240" fill="url(#bg)" stroke="#2a2f45" rx="10"/>
+    <text x="130" y="28" text-anchor="middle" fill="#38bdf8" font-family="Inter,Segoe UI,sans-serif" font-size="14" font-weight="700">Classificação</text>
+    <rect x="30" y="45" width="200" height="130" fill="url(#scene)" stroke="#2a2f45" rx="6"/>
+    <!-- cena simplificada: gato -->
+    <ellipse cx="130" cy="105" rx="45" ry="35" fill="#94a3b8"/>
+    <polygon points="95,85 85,65 105,80" fill="#94a3b8"/>
+    <polygon points="165,85 175,65 155,80" fill="#94a3b8"/>
+    <circle cx="115" cy="100" r="4" fill="#0d0f14"/>
+    <circle cx="145" cy="100" r="4" fill="#0d0f14"/>
+  </g>
+  <text x="150" y="210" text-anchor="middle" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="22" font-weight="700">"Gato"</text>
+  <text x="150" y="232" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="11">1 rótulo para a imagem inteira</text>
+
+  <!-- Painel 2: Detecção -->
+  <g transform="translate(320, 20)">
+    <rect width="260" height="240" fill="url(#bg)" stroke="#2a2f45" rx="10"/>
+    <text x="130" y="28" text-anchor="middle" fill="#f87171" font-family="Inter,Segoe UI,sans-serif" font-size="14" font-weight="700">Detecção</text>
+    <rect x="30" y="45" width="200" height="130" fill="url(#scene)" stroke="#2a2f45" rx="6"/>
+    <ellipse cx="110" cy="105" rx="35" ry="28" fill="#94a3b8"/>
+    <rect x="75" y="78" width="70" height="55" fill="none" stroke="#ef4444" stroke-width="2.5" rx="3"/>
+    <text x="110" y="72" text-anchor="middle" fill="#ef4444" font-family="Inter,Segoe UI,sans-serif" font-size="10" font-weight="600">gato 0.92</text>
+    <ellipse cx="175" cy="120" rx="22" ry="18" fill="#64748b"/>
+    <rect x="155" y="100" width="40" height="40" fill="none" stroke="#ef4444" stroke-width="2.5" rx="3"/>
+    <text x="175" y="95" text-anchor="middle" fill="#ef4444" font-family="Inter,Segoe UI,sans-serif" font-size="10" font-weight="600">cão 0.87</text>
+  </g>
+  <text x="450" y="210" text-anchor="middle" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="12">Bounding boxes + classes</text>
+  <text x="450" y="232" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="11">Onde está cada objeto?</text>
+
+  <!-- Painel 3: Segmentação -->
+  <g transform="translate(620, 20)">
+    <rect width="260" height="240" fill="url(#bg)" stroke="#2a2f45" rx="10"/>
+    <text x="130" y="28" text-anchor="middle" fill="#22c55e" font-family="Inter,Segoe UI,sans-serif" font-size="14" font-weight="700">Segmentação</text>
+    <rect x="30" y="45" width="200" height="130" fill="#1a2332" stroke="#2a2f45" rx="6"/>
+    <!-- máscaras pixel a pixel -->
+    <ellipse cx="110" cy="105" rx="35" ry="28" fill="#22c55e" opacity="0.75"/>
+    <ellipse cx="175" cy="120" rx="22" ry="18" fill="#3b82f6" opacity="0.75"/>
+    <rect x="30" y="45" width="200" height="40" fill="#a855f7" opacity="0.35"/>
+    <rect x="30" y="135" width="200" height="40" fill="#f97316" opacity="0.35"/>
+    <!-- grid de pixels -->
+    <g stroke="#2a2f45" stroke-width="0.5" opacity="0.6">
+      <line x1="30" y1="65" x2="230" y2="65"/>
+      <line x1="30" y1="85" x2="230" y2="85"/>
+      <line x1="30" y1="105" x2="230" y2="105"/>
+      <line x1="30" y1="125" x2="230" y2="125"/>
+      <line x1="80" y1="45" x2="80" y2="175"/>
+      <line x1="130" y1="45" x2="130" y2="175"/>
+      <line x1="180" y1="45" x2="180" y2="175"/>
+    </g>
+  </g>
+  <text x="750" y="210" text-anchor="middle" fill="#e2e8f0" font-family="Inter,Segoe UI,sans-serif" font-size="12">Máscara densa por pixel</text>
+  <text x="750" y="232" text-anchor="middle" fill="#94a3b8" font-family="Inter,Segoe UI,sans-serif" font-size="11">Qual pixel pertence a quê?</text>
+
+  <!-- setas de progressão -->
+  <text x="295" y="140" fill="#64748b" font-family="Inter,Segoe UI,sans-serif" font-size="20">→</text>
+  <text x="595" y="140" fill="#64748b" font-family="Inter,Segoe UI,sans-serif" font-size="20">→</text>
+</svg>

@@ -1,0 +1,43 @@
+# BCC6003 — Segmentação Semântica (YOLO / U-Net)
+
+Material da disciplina **BCC6003 – Inteligência Computacional** (Bacharelado em Ciência da Computação).
+
+**Tópico:** técnicas de segmentação semântica, com ênfase em **YOLO** e **U-Net**.
+
+## Slides (GitHub Pages)
+
+Apresentação em Reveal.js:
+
+**[Abrir slides](https://geazzy.github.io/bcc6003-segmentacao-semantica/apresentacao/)**
+
+> Se o link acima ainda não estiver ativo, sirva localmente: `python3 -m http.server 8080` na raiz do repositório e acesse `http://localhost:8080/apresentacao/`.
+
+## Conteúdo
+
+| Arquivo | Descrição |
+|---------|-----------|
+| [`apresentacao/`](apresentacao/) | Slides da aula (~28 slides): conceitos, YOLO, U-Net, comparação e atividades. |
+| [`revisao-bibliografica.md`](revisao-bibliografica.md) | Guia de estudos complementar com contexto bibliográfico e leitura orientada. |
+| [`exercicio.md`](exercicio.md) | Especificação do exercício prático: U-Net + Oxford-IIIT Pet no Kaggle. |
+| [`materiais/notebooks/`](materiais/notebooks/) | Notebook Jupyter para treinar U-Net no Kaggle. |
+| [`materiais/referencias/unet-architecture-explained.pdf`](materiais/referencias/unet-architecture-explained.pdf) | Material complementar sobre a arquitetura U-Net (leitura opcional). |
+| [`unet/`](unet/) | Demo interativa da U-Net (acessível a partir do slide 22). |
+
+## Como usar
+
+1. Leia a **revisão bibliográfica** antes da aula e para a atividade pós-aula.
+2. Acompanhe os **slides** na aula ou pelo link do GitHub Pages.
+3. Consulte o PDF da U-Net em [`materiais/referencias/`](materiais/referencias/) para aprofundar a arquitetura encoder–decoder.
+4. Publique o notebook em [`materiais/notebooks/`](materiais/notebooks/) no Kaggle para a entrega do exercício (instruções no README da pasta).
+
+## Referências principais
+
+- Goodfellow, I.; Bengio, Y.; Courville, A. *Deep Learning*. MIT Press, 2016.
+- Redmon, J. et al. *You Only Look Once: Unified, Real-Time Object Detection*. CVPR, 2016.
+- Ronneberger, O.; Fischer, P.; Brox, T. *U-Net: Convolutional Networks for Biomedical Image Segmentation*. MICCAI, 2015.
+- Long, J.; Shelhamer, E.; Darrell, T. *Fully Convolutional Networks for Semantic Segmentation*. CVPR, 2015.
+
+---
+
+**Professor:** Diego Bertolini Gonçalves  
+**Disciplina:** BCC6003 – Inteligência Computacional
