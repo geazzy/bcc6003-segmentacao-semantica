@@ -10,7 +10,18 @@ Apresentação em Reveal.js:
 
 **[Abrir slides](https://geazzy.github.io/bcc6003-segmentacao-semantica/apresentacao/)**
 
-> Se o link acima ainda não estiver ativo, sirva localmente: `python3 -m http.server 8080` na raiz do repositório e acesse `http://localhost:8080/apresentacao/`.
+> Se o link acima ainda não estiver ativo, siga os passos abaixo para rodar os slides localmente:
+>
+> 1. **Clone o repositório:**
+>    ```bash
+>    git clone https://github.com/geazzy/bcc6003-segmentacao-semantica.git
+>    cd bcc6003-segmentacao-semantica
+>    ```
+> 2. **Sirva localmente com Python:**
+>    ```bash
+>    python3 -m http.server 8080
+>    ```
+> 3. Acesse: [http://localhost:8080/apresentacao/](http://localhost:8080/apresentacao/)
 
 ## Exercício prático (Google Colab)
 
